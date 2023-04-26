@@ -1,0 +1,17 @@
+.wrapper {
+    width: 900px;
+    height: fit-content;
+    margin: auto auto;
+    background-color: white;
+    border-radius: 2em;
+    border: 2px solid grey;
+    padding: 10px 10px 10px 20px;
+    color: black;
+}
+.wrapper .intro {
+    display: inline-block;
+}
+.title {
+    width: fit-content;
+    margin: 0 auto;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- import bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- import ajax -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <title>Inventory management</title>
+    <style>
+        .wrapper {
+            padding: 5em 0;
+            width: 900px;
+            margin: 0 auto;
+        }
+
+        .wrapper h1 {
+            text-align: center;
+            margin: 1em 0;
+        }
+
+        .wrapper .btn {
+            display: inline-block;
+            float: right;
+            width: 100px;
+            margin: 1em 0;
+        }
+
+        .coffee-list-wrapper {
+            clear: both;
+            padding: 2em;
+            border-radius: 10px;
+            border: 2px solid grey;
+        }
+
+        tr {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .btn-list {
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
+    <script>
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        var csrftoken = getCookie('csrftoken');
+        
+        function onClinkDelete(id) {
+            $.ajax({
+                type: 'DELETE',
+                url: '/inventory/coffees/' + id,
+                headers: {"X-CSRFToken": csrftoken},
+                success: function(response) {
+                    console.log(response);
+                    alert("삭제 완료");
+                    location.reload();
+                }
+            })
+        }
+    </script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1>Coffee Order</h1>
+        <a href="./add.html" class="btn btn-primary">Add</a>
+        <div class="coffee-list-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Product</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Discription</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coffee in coffee_list %}
+                    <tr>
+                        <th scope="row">{{ coffee.id }}</th>
+                        <td>{{ coffee.product }}</td>
+                        <td>{{ coffee.price }}</td>
+                        <td>
+                            {% if coffee.code == 0 %}
+                            ice / hot
+                            {% elif coffee.code == 1 %}
+                            ice only
+                            {% else %}
+                            hot only
+                            {% endif %}
+                        </td>
+                        <td class="btn-list">
+                            <a href="./update.html/{{ coffee.id }}" class="btn btn-success">UPDATE</a>
+                            <button type="button" class="btn btn-danger" onclick="onClinkDelete('{{ coffee.id }}')">DELETE</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
