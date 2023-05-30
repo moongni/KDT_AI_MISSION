@@ -1,5 +1,4 @@
 import os
-
 import torch
 
 
@@ -10,6 +9,7 @@ EPOCHS = 100
 CLASSES_INFO = {0:'Buffalo', 1:'Elephant', 2:'Rhinoceros', 3:'Zebra'}
 CLASSES = CLASSES_INFO.keys()
 NUM_CLASSES = len(CLASSES)
+PATIENCE = 10
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -27,7 +27,7 @@ TEST_PATH = os.path.join(DATA_PATH, 'test')
 TEST_DF_PATH = os.path.join(TEST_PATH, 'test_output.csv')
 
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'result', 'images')
-MODEL_SAVE_PATH = os.path.join(ROOT_DIR, 'result', 'model')
+MODEL_SAVE_PATH = '/content/'
 
 
 # Optional: GeneralizedRCNNTransform SETTING

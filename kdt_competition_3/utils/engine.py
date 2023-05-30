@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 
 from config import (
-    DEVICE, EPOCHS, OUTPUT_PATH, MODEL_SAVE_PATH
+    DEVICE, EPOCHS, MODEL_SAVE_PATH, PATIENCE
 )
 
 
@@ -15,7 +15,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = float('inf')
-
+    patience = 0
     for epoch in range(1, EPOCHS + 1):
         print(f"Epoch {epoch}/{EPOCHS}")
         print('=' * 20)
@@ -27,8 +27,15 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
         val_loss = val_one_epoch(model, dataloaders['test'])
 
         if best_loss > val_loss:
+            print(f"Best Model detection Save model state")
             best_loss = val_loss
             best_model_wts = copy.deepcopy(model.state_dict())
+            patience = 0
+        
+        # Early Stop
+        if patience > PATIENCE:
+            print(f"Ealry Stoping current epoch: {epoch}")
+            break
 
     time_elapsed = time.time() - since
     print(f"Training compelet in {time_elapsed // 60}m {time_elapsed % 60}s")    
@@ -80,3 +87,7 @@ def val_one_epoch(model, dataloader):
     print(f"TEST LOSS: {epoch_loss:.4f}")
 
     return epoch_loss
+
+
+def evaluate(model, dataloader):
+    ...
