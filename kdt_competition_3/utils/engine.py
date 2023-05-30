@@ -24,7 +24,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
         if lr_scheduler is not None:
             lr_scheduler.step()
 
-        val_loss = evaluate(model, dataloaders['test'])
+        val_loss = val_one_epoch(model, dataloaders['test'])
 
         if best_loss > val_loss:
             best_loss = val_loss
@@ -53,27 +53,26 @@ def train_one_epoch(model, optimizer, dataloader):
         loss_dict = model(images, targets)
 
         losses = sum(loss for loss in loss_dict.values())
+        losses_value = losses.item()
 
         # backward propagation 
         losses.backward()
         optimizer.step()
+        running_loss += losses_value * len(images)
+        prog_bar.set_description(desc=f"Loss: {losses_value:.4f}")
 
-        running_loss += losses.item() * len(images)
-        prog_bar.set_description(desc=f"Loss: {running_loss:.4f}")
-         
     epoch_loss = running_loss / len(dataloader)
     print(f"TRAIN LOSS: {epoch_loss:.4f}")
 
 
-def evaluate(model, dataloader):
-    model.eval()
+def val_one_epoch(model, dataloader):
     running_loss = 0.
     for images, targets in dataloader:
         images = list(image.to(DEVICE) for image in images)
         targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
         with torch.no_grad():
             loss_dict = model(images, targets)
-        
+
         losses = sum(loss for loss in loss_dict.values())
         running_loss += losses.item() * len(images)
     

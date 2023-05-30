@@ -41,3 +41,4 @@ optimizer = torch.optim.Adam(params, lr=1e-3)
 lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 3, gamma=0.1)
 
 best_model = train(model, optimizer, dataloaders, lr_scheduler)
+
