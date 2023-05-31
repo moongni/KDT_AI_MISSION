@@ -106,7 +106,7 @@ class ObjDetectionDataset(Dataset):
 
         target = {}
         target['boxes'] = torch.from_numpy(boxes).float()
-        target['labels'] = torch.from_numpy(labels, dtype=torch.int64)
+        target['labels'] = torch.from_numpy(labels).to(torch.int64)
         target['image_id'] = torch.tensor([file_name])
         target['area'] = torch.from_numpy(area).float()
         target['iscrowd'] = iscrowd
