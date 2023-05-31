@@ -47,7 +47,6 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     print(f"Best Test Loss: {best_loss:.4f}")
 
     model.load_state_dict(best_model_wts)
-    torch.save(model, os.path.join(MODEL_SAVE_PATH, 'best_detector.pth'))
 
     if VISUALIZE_EVALUATED_IMAGE:
         detect_object(model, dataloaders['test'], CONFIDENCE)
@@ -150,6 +149,7 @@ def detect_object(model, dataloader, confidence=0.7):
         - the final image is displayed
     """
     print(f"Detect Object running ...")
+    model.to(DEVICE)
     for images, targets in dataloader:
         images = list(image.to(DEVICE) for image in images)
         targets = [{k: v.cpu().numpy() for k, v in t.items()} for t in targets]
