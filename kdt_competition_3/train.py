@@ -12,7 +12,7 @@ from PIL import Image
 
 from utils import *
 from config import *
-from models import create_model
+from models import *
 
 
 # fix seed

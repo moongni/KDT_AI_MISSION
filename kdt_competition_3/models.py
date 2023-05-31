@@ -50,6 +50,8 @@ def backbone_mobilnet():
                     rpn_anchor_generator=anchor_generator,
                     box_roi_pool=roi_pooler)
     return model
+
+
 if __name__ == "__main__":
-    model = create_model()
+    model = fasterrcnn_resnet50()
     print(model)
