@@ -1,20 +1,22 @@
 import os
 import torch
-
+import numpy as np
 
 # TRAIN SETTING
 IMG_SIZE = 416
 BATCH_SIZE = 2
 EPOCHS = 100
-CLASSES_INFO = {0:'Buffalo', 1:'Elephant', 2:'Rhinoceros', 3:'Zebra'}
-CLASSES = CLASSES_INFO.keys()
+CLASS_INFO = {0:'Buffalo', 1:'Elephant', 2:'Rhinoceros', 3:'Zebra'}
+CLASSES = CLASS_INFO.keys()
 NUM_CLASSES = len(CLASSES)
 PATIENCE = 10
-
+CONFIDENCE = 0.7
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-VISUALIZE_TRANSFORMED_IMAGES = True
+VISUALIZE_EVALUATED_IMAGE = True
 
+MEAN = np.array([0.485, 0.456, 0.406])
+STD = np.array([0.299, 0.224, 0.225])
 
 # PATH SETTING
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
