@@ -88,7 +88,7 @@ class ObjDetectionDataset(Dataset):
         height = (np.array(data['h']) * self.img_size[1]).reshape(-1, 1) // 2
 
         # get labels
-        labels = data['label_idx']
+        labels = np.array(data['label_idx']) + 1  # 0 index -> background
         num_objs = len(labels)
 
         # get bounding box
@@ -106,7 +106,7 @@ class ObjDetectionDataset(Dataset):
 
         target = {}
         target['boxes'] = torch.from_numpy(boxes).float()
-        target['labels'] = torch.tensor(labels, dtype=torch.int64)
+        target['labels'] = torch.from_numpy(labels, dtype=torch.int64)
         target['image_id'] = torch.tensor([file_name])
         target['area'] = torch.from_numpy(area).float()
         target['iscrowd'] = iscrowd

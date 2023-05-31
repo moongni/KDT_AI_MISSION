@@ -15,6 +15,9 @@ from config import *
 from models import create_model
 
 
+# fix seed
+set_seed()
+
 # Data 불러오기
 train_df = pd.read_csv(TRAIN_DF_PATH)
 test_df = pd.read_csv(TEST_DF_PATH)
@@ -37,7 +40,7 @@ model = model.to(DEVICE)
 
 # get the model params
 params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.Adam(params, lr=1e-3)
+optimizer = torch.optim.Adam(params, lr=1e-4)
 lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 
 train(model, optimizer, dataloaders, lr_scheduler)

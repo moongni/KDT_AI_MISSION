@@ -1,3 +1,6 @@
+import os
+import random
+
 import numpy as np
 import torch
 from torchvision import transforms as T
@@ -26,19 +29,18 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def save_loss_plot(OUT_DIR, train_loss, val_loss):
-    figure_1, train_ax = plt.subplots()
-    figure_2, valid_ax = plt.subplots()
-    train_ax.plot(train_loss, color='tab:blue')
-    train_ax.set_xlabel('iterations')
-    train_ax.set_ylabel('train loss')
-    valid_ax.plot(val_loss, color='tab:red')
-    valid_ax.set_xlabel('iterations')
-    valid_ax.set_ylabel('validation loss')
-    figure_1.savefig(f"{OUT_DIR}/train_loss.png")
-    figure_2.savefig(f"{OUT_DIR}/valid_loss.png")
-    print('SAVING PLOTS COMPLETE...')
-    plt.close('all')
+def set_seed():
+    random.seed(SEED)
+    os.environ['PYTHONHASHSEED'] = str(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    torch.cuda.manual_seed(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+
+
+def plot_loss(train_losses, val_losses):
+    ...
 
 
 if __name__ == "__main__":
