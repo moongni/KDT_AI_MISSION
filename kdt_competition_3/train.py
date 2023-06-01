@@ -40,7 +40,10 @@ params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.Adam(params, lr=1e-4)
 lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 
-best_model = train(model, optimizer, dataloaders, lr_scheduler)
+# Train model
+best_model, train_loss_list, test_loss_list = train(model, optimizer, dataloaders, lr_scheduler)
 
+# Save best model
 make_dir(MODEL_SAVE_PATH)
 torch.save(best_model, os.path.join(MODEL_SAVE_PATH, 'best_detector.pth'))
+

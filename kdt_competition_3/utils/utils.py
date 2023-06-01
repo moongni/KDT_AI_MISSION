@@ -65,7 +65,7 @@ def set_seed():
     torch.backends.cudnn.benchmark = True
 
 
-def plot_loss(train_losses, val_losses):
+def visualize_losses(train_losses, test_losses):
     ...
 
 

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from config import *
 from .utils import invTrans, make_dir
 
+
 def train(model, optimizer, dataloaders, lr_scheduler=None):
     since = time.time()
 
@@ -51,7 +52,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     if VISUALIZE_EVALUATED_IMAGE:
         detect_object(model, dataloaders['test'], CONFIDENCE)
 
-    return model
+    return model, train_loss_list, test_loss_list
 
 
 def train_one_epoch(model, optimizer, dataloaders):
@@ -91,28 +92,6 @@ def train_one_epoch(model, optimizer, dataloaders):
             test_loss = epoch_loss
 
     return train_loss, test_loss
-
-
-def evaluate(model, dataloader):
-    # model.eval()
-    running_loss = 0.
-    prog_bar = tqdm(dataloader, total=len(dataloader))
-    for images, targets in prog_bar:
-        images = list(image.to(DEVICE) for image in images)
-        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
-        with torch.no_grad():
-            # pred = model(images)
-            loss_dict = model(images, targets)
-
-        losses = sum(loss for loss in loss_dict.values())
-        losses_value = losses.item()
-        running_loss += losses_value * len(images)
-        prog_bar.set_description(desc=f"Test Loss: {losses_value:.4f}")
-    
-    epoch_loss = running_loss / len(dataloader)
-    print(f"TEST LOSS: {epoch_loss:.4f}")
-
-    return epoch_loss
 
 
 def get_prediction(model, image, confidence):
