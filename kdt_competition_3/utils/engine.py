@@ -15,23 +15,23 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = float('inf')
     train_loss_list = []
-    val_loss_list = []
+    test_loss_list = []
     patience = 0
     for epoch in range(1, EPOCHS + 1):
         print(f"Epoch {epoch}/{EPOCHS}")
-        train_loss = train_one_epoch(model, optimizer, dataloaders['train'])
+        train_loss, test_loss = train_one_epoch(model, optimizer, dataloaders)
         train_loss_list.append(train_loss)
-
+        test_loss_list.append(test_loss)
+        
         if lr_scheduler is not None:
             lr_scheduler.step()
 
-        val_loss = evaluate(model, dataloaders['test'])
-        val_loss_list.append(val_loss)
+        # test_loss = evaluate(model, dataloaders['test'])
         patience += 1
 
-        if best_loss > val_loss:
+        if best_loss > test_loss:
             print(f"Best Model detection Save model state")
-            best_loss = val_loss
+            best_loss = test_loss
             best_model_wts = copy.deepcopy(model.state_dict())
             patience = 0
 
@@ -54,31 +54,43 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     return model
 
 
-def train_one_epoch(model, optimizer, dataloader):
+def train_one_epoch(model, optimizer, dataloaders):
     model.train()
-    running_loss = 0.
+    train_loss = 0.
+    test_loss = 0.
+    for phase in ['train', 'test']:
+        running_loss = 0.
+        dataloader = dataloaders[phase]
 
-    prog_bar = tqdm(dataloader, total=len(dataloader))
-    for images, targets in prog_bar:
-        images = list(image.to(DEVICE) for image in images)
-        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        prog_bar = tqdm(dataloader, total=len(dataloader))
+        for images, targets in prog_bar:
+            images = list(image.to(DEVICE) for image in images)
+            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
-        optimizer.zero_grad()
-        loss_dict = model(images, targets)
+            optimizer.zero_grad()
 
-        losses = sum(loss for loss in loss_dict.values())
-        losses_value = losses.item()
+            with torch.set_grad_enabled(phase == 'train'):
+                loss_dict = model(images, targets)
 
-        # backward propagation 
-        losses.backward()
-        optimizer.step()
-        running_loss += losses_value * len(images)
-        prog_bar.set_description(desc=f"Train Loss: {losses_value:.4f}")
+                losses = sum(loss for loss in loss_dict.values())
+                losses_value = losses.item()
+                # backward propagation 
+                if phase == 'train':
+                    losses.backward()
+                    optimizer.step()
 
-    epoch_loss = running_loss / len(dataloader)
-    print(f"TRAIN LOSS: {epoch_loss:.4f}")
+            running_loss += losses_value * len(images)
+            prog_bar.set_description(desc=f"{phase} Loss: {losses_value:.4f}")
 
-    return epoch_loss
+        epoch_loss = running_loss / len(dataloader)
+        print(f"{phase} LOSS: {epoch_loss:.4f}")
+
+        if phase == 'train':
+            train_loss = epoch_loss
+        else:
+            test_loss = epoch_loss
+
+    return train_loss, test_loss
 
 
 def evaluate(model, dataloader):
@@ -148,7 +160,7 @@ def detect_object(model, dataloader, confidence=0.7):
             with opencv
         - the final image is displayed
     """
-    print(f"Detect Object running ...")
+    print(f"Detect Object ...")
     since = time.time()
 
     if not os.path.isdir(OUTPUT_PATH):

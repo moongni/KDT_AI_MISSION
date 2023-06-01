@@ -78,16 +78,11 @@ class ObjDetectionDataset(Dataset):
         # open Image
         image = Image.open(img_path)
         if self.transform is not None:
-            image = self.transform(image)
+            image, data = self.transform(image, data, self.train)
         else:
             image = np.asarray(image)
             image = transforms.ToTensor()(image)
-        # Data augmentation
-        if self.train and random.random() > 0.5:
-            image = transforms.RandomHorizontalFlip(1)(image)
-            data['x_center'] = [1 - x for x in data['x_center']]
 
-        # get rate -> pixel
         x_center = np.array(data['x_center']).reshape(-1, 1) * self.img_size[2]
         y_center = np.array(data['y_center']).reshape(-1, 1) * self.img_size[1]
         width = (np.array(data['w']) * self.img_size[2]).reshape(-1, 1) // 2
@@ -124,6 +119,7 @@ class ObjDetectionDataset(Dataset):
     
 
 if __name__ == "__main__":
+    from utils import transform
     DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
     TRAIN_PATH = os.path.join(DATA_ROOT, 'train')
     TEST_PATH = os.path.join(DATA_ROOT, 'test')
@@ -131,10 +127,6 @@ if __name__ == "__main__":
     train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
     test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
 
-    transform = transforms.Compose([
-        transforms.Resize((416, 416)),
-        transforms.ToTensor()
-    ])
     train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, transform=transform)
 
     print(len(train_dset))

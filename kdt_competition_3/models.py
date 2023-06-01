@@ -10,7 +10,7 @@ from config import NUM_CLASSES
 def create_diff_backbone(backbone_name: str) -> nn.Module:
     print(f"Create Model")
     print(f"Backbone network: {backbone_name}")
-    
+
     if backbone_name == 'resnet18':
         backbone = backbone_resnet18()
     elif backbone_name == 'mobilenet':
@@ -51,7 +51,7 @@ def backbone_resnet18():
     
     return backbone
 
-def backbone_resnet50():
+def fasterrcnn_resnet_50():
     # load FasterRCNN pretrained model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
 
