@@ -149,6 +149,8 @@ def detect_object(model, dataloader, confidence=0.7):
         - the final image is displayed
     """
     print(f"Detect Object running ...")
+    since = time.time()
+
     if not os.path.isdir(OUTPUT_PATH):
         make_dir(OUTPUT_PATH)
 
@@ -183,3 +185,6 @@ def detect_object(model, dataloader, confidence=0.7):
             title = str(target['image_id'].item()).zfill(4)
             
             plt.savefig(os.path.join(OUTPUT_PATH, title + '.png'))
+    
+    time_elapsed = time.time() - since
+    print(f"Inference Time per sample: {time_elapsed / (len(dataloader) * BATCH_SIZE):.6f}s")

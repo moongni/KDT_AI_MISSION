@@ -8,11 +8,15 @@ from config import NUM_CLASSES
 
 
 def create_diff_backbone(backbone_name: str) -> nn.Module:
+    print(f"Create Model")
+    print(f"Backbone network: {backbone_name}")
+    
     if backbone_name == 'resnet18':
         backbone = backbone_resnet18()
     elif backbone_name == 'mobilenet':
         backbone = backbone_mobilnet()
-
+    else:
+        raise Exception(f"Invaild backbone name {backbone_name}")
     # let's make the RPN generate 5 x 3 anchors per spatial
     # location, with 5 different sizes and 3 different aspect
     # ratios. We have a Tuple[Tuple[int]] because each feature
