@@ -35,8 +35,7 @@ dataloaders = {
 
 
 # Model 불러오기
-model = backbone_mobilnet()
-# model = fasterrcnn_resnet50()
+model = create_diff_backbone('resnet18')
 model = model.to(DEVICE)
 
 # get the model params
@@ -46,4 +45,5 @@ lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 
 model = train(model, optimizer, dataloaders, lr_scheduler)
 
+make_dir(MODEL_SAVE_PATH)
 torch.save(model, os.path.join(MODEL_SAVE_PATH, 'best_detector.pth'))

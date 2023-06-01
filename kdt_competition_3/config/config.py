@@ -4,14 +4,14 @@ import numpy as np
 
 # TRAIN SETTING
 IMG_SIZE = 416
-BATCH_SIZE = 2
+BATCH_SIZE = 8
 EPOCHS = 100
 SEED = 12341
 CLASS_INFO = {0: 'background', 1:'Buffalo', 2:'Elephant', 3:'Rhinoceros', 4:'Zebra'}
 CLASSES = CLASS_INFO.keys()
 NUM_CLASSES = len(CLASSES)
 PATIENCE = 10
-CONFIDENCE = 0.7
+CONFIDENCE = 0.8
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 VISUALIZE_EVALUATED_IMAGE = True

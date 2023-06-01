@@ -7,7 +7,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from config import *
-from .utils import invTrans
+from .utils import invTrans, make_dir
 
 def train(model, optimizer, dataloaders, lr_scheduler=None):
     since = time.time()
@@ -149,6 +149,9 @@ def detect_object(model, dataloader, confidence=0.7):
         - the final image is displayed
     """
     print(f"Detect Object running ...")
+    if not os.path.isdir(OUTPUT_PATH):
+        make_dir(OUTPUT_PATH)
+
     model.to(DEVICE)
     for images, targets in dataloader:
         images = list(image.to(DEVICE) for image in images)
@@ -178,4 +181,5 @@ def detect_object(model, dataloader, confidence=0.7):
                 plt.text(box[2], (box[1] - 10), s=CLASS_INFO[target['labels'][i]], c='r')
             
             title = str(target['image_id'].item()).zfill(4)
+            
             plt.savefig(os.path.join(OUTPUT_PATH, title + '.png'))

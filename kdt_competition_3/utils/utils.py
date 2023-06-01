@@ -5,7 +5,6 @@ import numpy as np
 import torch
 from torchvision import transforms as T
 import matplotlib.pyplot as plt
-import scipy.misc
 
 from config import *
 
@@ -43,16 +42,22 @@ def plot_loss(train_losses, val_losses):
     ...
 
 
+def make_dir(path) -> None:
+    from pathlib import Path
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+
+
 if __name__ == "__main__":
     import pandas as pd
-    from torch.utils.data import DataLoader
+    # from torch.utils.data import DataLoader
 
-    from config import *
-    from dataset import ObjDetectionDataset 
+    # from config import *
+    # from dataset import ObjDetectionDataset 
     
     
-    train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
-    test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
+    # train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
+    # test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
 
-    transform = get_transform()
-    train_dset = ObjDetectionDataset(TRAIN_PATH, train_df)
+    # transform = get_transform()
+    # train_dset = ObjDetectionDataset(TRAIN_PATH, train_df)
