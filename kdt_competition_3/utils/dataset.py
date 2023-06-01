@@ -1,5 +1,5 @@
-import os
-from typing import Optional, Union, Tuple
+import os, random
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -18,6 +18,7 @@ class ObjDetectionDataset(Dataset):
         root: str,
         df: Optional[pd.DataFrame],
         transform: Optional[nn.Module] = None,
+        train: bool = True
     ) -> None:
         if not os.path.isdir(root):
             raise Exception(f"Invalid root path: {root}")
@@ -28,7 +29,8 @@ class ObjDetectionDataset(Dataset):
         self.df = df
         self.transform = transform
         self.img_size = (3, config.IMG_SIZE, config.IMG_SIZE)
-        
+        self.train = train
+
     def preprocessing(self, df: pd.DataFrame) -> pd.DataFrame:
         new_data = {
             'label_idx': [],
@@ -80,6 +82,10 @@ class ObjDetectionDataset(Dataset):
         else:
             image = np.asarray(image)
             image = transforms.ToTensor()(image)
+        # Data augmentation
+        if self.train and random.random() > 0.5:
+            image = transforms.RandomHorizontalFlip(1)(image)
+            data['x_center'] = [1 - x for x in data['x_center']]
 
         # get rate -> pixel
         x_center = np.array(data['x_center']).reshape(-1, 1) * self.img_size[2]
@@ -101,7 +107,7 @@ class ObjDetectionDataset(Dataset):
         # get boxes area
         area = ((boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]))
         
-        # get iscrowd 여러 인스턴스가 있는지
+        # get iscrowd - 여러 인스턴스가 있는지
         iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
 
         target = {}
