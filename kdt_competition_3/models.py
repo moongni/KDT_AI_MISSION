@@ -51,6 +51,7 @@ def backbone_resnet18():
     
     return backbone
 
+
 def fasterrcnn_resnet_50():
     # load FasterRCNN pretrained model
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)

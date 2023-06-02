@@ -1,6 +1,7 @@
 import os
 import time
 import copy
+from typing import Tuple, List
 
 import torch
 from tqdm import tqdm
@@ -50,7 +51,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     model.load_state_dict(best_model_wts)
 
     if VISUALIZE_EVALUATED_IMAGE:
-        detect_object(model, dataloaders['test'], CONFIDENCE)
+        visualize_object_detection(model, dataloaders['test'], CONFIDENCE)
 
     return model, train_loss_list, test_loss_list
 
@@ -94,7 +95,7 @@ def train_one_epoch(model, optimizer, dataloaders):
     return train_loss, test_loss
 
 
-def get_prediction(model, image, confidence):
+def get_prediction(model, image, confidence) -> Tuple[List, List, List]:
     """
     get_prediction
         parameters:
@@ -112,7 +113,7 @@ def get_prediction(model, image, confidence):
     with torch.no_grad():
         pred = model([image])
 
-    pred_class = [CLASS_INFO[i] for i in pred[0]['labels'].cpu().numpy()]
+    pred_class = list(pred[0]['labels'].cpu().numpy())
     pred_boxes = [(i[0], i[1], i[2], i[3]) for i in list(pred[0]['boxes'].detach().cpu().numpy())]
     pred_score = list(pred[0]['scores'].detach().cpu().numpy())
 
@@ -126,7 +127,7 @@ def get_prediction(model, image, confidence):
     return pred_class, pred_boxes, pred_score
 
 
-def detect_object(model, dataloader, confidence=0.7):
+def visualize_object_detection(model, dataloader, confidence=0.7) -> None:
     """
     object_detection_api
         parameters:
@@ -142,8 +143,9 @@ def detect_object(model, dataloader, confidence=0.7):
     print(f"Detect Object ...")
     since = time.time()
 
-    if not os.path.isdir(OUTPUT_PATH):
-        make_dir(OUTPUT_PATH)
+    output_path = os.path.join(OUTPUT_PATH, 'images')
+    if not os.path.isdir(output_path):
+        make_dir(output_path)
 
     model.to(DEVICE)
     for images, targets in dataloader:
@@ -153,6 +155,8 @@ def detect_object(model, dataloader, confidence=0.7):
         for image, target in zip(images, targets):
             fig = plt.figure()
             pred_class, pred_boxes, pred_score = get_prediction(model, image, confidence)
+            # class idx -> class name
+            pred_class = [CLASS_INFO[i] for i in pred_class]
             image = image.cpu()
             image = invTrans(image).permute(1, 2, 0)
             plt.axis('off')
@@ -164,7 +168,7 @@ def detect_object(model, dataloader, confidence=0.7):
                 plt.plot([pred_box[0], pred_box[2]], [pred_box[3], pred_box[3]], c='b')
                 plt.plot([pred_box[2], pred_box[2]], [pred_box[1], pred_box[3]], c='b')
                 plt.text(pred_box[0], (pred_box[1] - 10), s=pred_class[i], c='b')
-                plt.text(pred_box[0], (pred_box[1] + 10), s=pred_score[i], c='b')
+                plt.text(pred_box[0], (pred_box[1] + 20), s=pred_score[i], c='b')
             for i, box in enumerate(target['boxes']):
                 # real box color red
                 plt.plot([box[0], box[0]], [box[1], box[3]], c='r')
@@ -175,7 +179,41 @@ def detect_object(model, dataloader, confidence=0.7):
             
             title = str(target['image_id'].item()).zfill(4)
             
-            plt.savefig(os.path.join(OUTPUT_PATH, title + '.png'))
+            plt.savefig(os.path.join(output_path, title + '.png'))
     
     time_elapsed = time.time() - since
     print(f"Inference Time per sample: {time_elapsed / (len(dataloader) * BATCH_SIZE):.6f}s")
+
+
+def mean_average_precision(model, dataloader):
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+    preds = []
+    y_true = []
+    for images, targets in tqdm(dataloader):
+        images = [image.to(DEVICE) for image in images]
+        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        for image, target in zip(images, targets):
+            pred_class, pred_boxes, pred_score = get_prediction(model, image, 0)
+            preds.append(
+                dict(
+                    boxes=torch.tensor(pred_boxes, dtype=torch.float32),
+                    scores=torch.tensor(pred_score, dtype=torch.float32),
+                    labels=torch.tensor(pred_class, dtype=torch.int64)
+                )
+            )
+            y_true.append(
+                dict(
+                    boxes=target['boxes'],
+                    labels=target['labels']
+                )
+            )
+
+    metric = MeanAveragePrecision()
+    metric.update(preds, y_true)
+    metric_dict = dict(metric.compute())
+    result = dict()
+    for key, value in metric_dict.items():
+        result[key] = value.cpu().numpy().tolist()
+
+    return result

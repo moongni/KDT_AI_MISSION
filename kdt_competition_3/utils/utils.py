@@ -33,10 +33,10 @@ def get_augmented_transform() -> T.Compose:
 
 def transform(image, target, train:bool):
     transforms = get_common_transform()
-    augmented = get_augmented_transform()
+    # augmented = get_augmented_transform()
     image = transforms(image)
     if train:
-        image = augmented(image)
+        # image = augmented(image)
         if random.random() > 0.5:
             image = T.RandomHorizontalFlip(1)(image)
             target['x_center'] = [1 - x for x in target['x_center']]
@@ -66,7 +66,13 @@ def set_seed():
 
 
 def visualize_losses(train_losses, test_losses):
-    ...
+    plt.figure(figsize=(12, 12))
+    plt.plot(train_losses, c='b', label='train')
+    plt.plot(test_losses, c='r', label='test')
+    plt.title('Loss graph')
+    plt.xlabel('epoch')
+    plt.ylabel('loss value')
+    plt.savefig(os.path.join(OUTPUT_PATH, 'loss_graph.png'))
 
 
 def make_dir(path) -> None:
@@ -88,3 +94,4 @@ if __name__ == "__main__":
 
     # transform = get_transform()
     # train_dset = ObjDetectionDataset(TRAIN_PATH, train_df)
+    visualize_losses([random.random() for _ in range(10)], [random.random() for _ in range(10)])

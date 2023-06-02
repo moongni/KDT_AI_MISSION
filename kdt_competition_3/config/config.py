@@ -29,8 +29,7 @@ TRAIN_DF_PATH = os.path.join(TRAIN_PATH, 'train_output.csv')
 TEST_PATH = os.path.join(DATA_PATH, 'test')
 TEST_DF_PATH = os.path.join(TEST_PATH, 'test_output.csv')
 
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'result', 'images')
-MODEL_SAVE_PATH = '/content/'
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'result')
 
 
 # Optional: GeneralizedRCNNTransform SETTING
