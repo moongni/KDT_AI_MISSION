@@ -48,8 +48,7 @@ best_model, train_loss_list, test_loss_list = train(model, optimizer, dataloader
 make_dir(OUTPUT_PATH)
 torch.save(best_model, os.path.join(OUTPUT_PATH, 'best_detector.pth'))
 
-model = torch.load('/home/mooooongni/Downloads/best_detector.pth', map_location=DEVICE)
-map_result = mean_average_precision(model, test_loader)
+map_result = mean_average_precision(best_model, test_loader)
 
 print(f"Train score metrix")
 pprint(map_result)

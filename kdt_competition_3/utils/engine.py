@@ -197,9 +197,9 @@ def mean_average_precision(model, dataloader):
             pred_class, pred_boxes, pred_score = get_prediction(model, image, 0)
             preds.append(
                 dict(
-                    boxes=torch.tensor(pred_boxes, dtype=torch.float32),
-                    scores=torch.tensor(pred_score, dtype=torch.float32),
-                    labels=torch.tensor(pred_class, dtype=torch.int64)
+                    boxes=torch.tensor(pred_boxes, dtype=torch.float32).to(DEVICE),
+                    scores=torch.tensor(pred_score, dtype=torch.float32).to(DEVICE),
+                    labels=torch.tensor(pred_class, dtype=torch.int64).to(DEVICE)
                 )
             )
             y_true.append(
