@@ -15,6 +15,7 @@ CONFIDENCE = 0.8
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 VISUALIZE_EVALUATED_IMAGE = True
+VISUALIZE_LOSS_GRAPH = True
 
 MEAN = np.array([0.485, 0.456, 0.406])
 STD = np.array([0.299, 0.224, 0.225])
@@ -30,12 +31,3 @@ TEST_PATH = os.path.join(DATA_PATH, 'test')
 TEST_DF_PATH = os.path.join(TEST_PATH, 'test_output.csv')
 
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'result')
-
-
-# Optional: GeneralizedRCNNTransform SETTING
-RCNNTransform = {
-    'min_size': 1024,
-    'max_size': 1024,
-    'image_mean': (0.485, 0.456, 0.406),
-    'image_std': (0.229, 0.224, 0.225)
-}
