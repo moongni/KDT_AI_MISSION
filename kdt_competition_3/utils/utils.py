@@ -13,6 +13,9 @@ invTrans = T.Normalize((-1 * MEAN) / STD, (1.0 / STD))
 
 
 def get_common_transform() -> T.Compose:
+    """
+    Return tranform method to apply both train and test dataset
+    """
     transforms = []
     transforms.append(T.Resize((IMG_SIZE, IMG_SIZE))),
     transforms.append(T.ToTensor()),
@@ -21,6 +24,9 @@ def get_common_transform() -> T.Compose:
 
 
 def get_augmented_transform() -> T.Compose:
+    """
+    Return tranform method to apply train dataset only
+    """
     transforms = []
     transforms.append(T.RandomApply([
         T.ColorJitter(brightness=0.1, contrast=0.2),
@@ -32,6 +38,9 @@ def get_augmented_transform() -> T.Compose:
 
 
 def transform(image, target, train:bool):
+    """
+    tranform method, if train is True, invert left and right with a 50% chance
+    """
     transforms = get_common_transform()
     # augmented = get_augmented_transform()
     image = transforms(image)
@@ -66,22 +75,28 @@ def set_seed():
 
 
 def visualize_losses(train_losses, test_losses):
+    """
+    save loss graph
+    """
     plt.figure(figsize=(12, 12))
     plt.plot(train_losses, c='b', label='train')
     plt.plot(test_losses, c='r', label='test')
     plt.title('Loss graph')
     plt.xlabel('epoch')
     plt.ylabel('loss value')
+    make_dir(OUTPUT_PATH)
     plt.savefig(os.path.join(OUTPUT_PATH, 'loss_graph.png'))
 
 
 def make_dir(path) -> None:
     from pathlib import Path
+
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":
+    ...
     import pandas as pd
     # from torch.utils.data import DataLoader
 

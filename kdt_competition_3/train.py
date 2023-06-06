@@ -44,15 +44,16 @@ lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 # Train model
 best_model, train_loss_list, test_loss_list = train(model, optimizer, dataloaders, lr_scheduler)
 
-# # Save best model
+# Save best model
 make_dir(OUTPUT_PATH)
 torch.save(best_model, os.path.join(OUTPUT_PATH, 'best_detector.pth'))
 
-model = torch.load('/home/mooooongni/Downloads/best_detector.pth', map_location=DEVICE)
-map_result = mean_average_precision(model, test_loader)
+# Get metrics score from test_loader
+map_result = mean_average_precision(best_model, test_loader)
 
 print(f"Train score metrix")
 pprint(map_result)
 
+# Save metrics score
 with open(os.path.join(OUTPUT_PATH, 'metrics.txt'), 'w') as f:
     f.write(json.dumps(map_result, indent='\t'))

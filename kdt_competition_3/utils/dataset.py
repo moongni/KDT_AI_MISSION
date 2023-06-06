@@ -1,4 +1,4 @@
-import os, random
+import os
 from typing import Optional
 
 import numpy as np
@@ -119,10 +119,8 @@ class ObjDetectionDataset(Dataset):
     
 
 if __name__ == "__main__":
+    from config import *
     from utils import transform
-    DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
-    TRAIN_PATH = os.path.join(DATA_ROOT, 'train')
-    TEST_PATH = os.path.join(DATA_ROOT, 'test')
 
     train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
     test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))

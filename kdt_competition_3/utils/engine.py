@@ -1,17 +1,18 @@
 import os
 import time
 import copy
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from config import *
-from .utils import invTrans, make_dir
+from .utils import invTrans, make_dir, visualize_losses
 
 
 def train(model, optimizer, dataloaders, lr_scheduler=None):
+    """Full train method"""
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
@@ -28,9 +29,9 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
         if lr_scheduler is not None:
             lr_scheduler.step()
 
-        # test_loss = evaluate(model, dataloaders['test'])
         patience += 1
-
+        
+        # Save Best model weight
         if best_loss > test_loss:
             print(f"Best Model detection Save model state")
             best_loss = test_loss
@@ -50,16 +51,21 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
 
     model.load_state_dict(best_model_wts)
 
+    # 모델이 추론한 결과 이미지 저장
     if VISUALIZE_EVALUATED_IMAGE:
         visualize_object_detection(model, dataloaders['test'], CONFIDENCE)
-
+    if VISUALIZE_LOSS_GRAPH:
+        visualize_losses(train_loss_list, test_loss_list)
+        
     return model, train_loss_list, test_loss_list
 
 
 def train_one_epoch(model, optimizer, dataloaders):
+    """Train model in epoch"""
     model.train()
     train_loss = 0.
     test_loss = 0.
+    # 각 에폭은 train, test 검증과정을 가짐
     for phase in ['train', 'test']:
         running_loss = 0.
         dataloader = dataloaders[phase]
@@ -70,10 +76,10 @@ def train_one_epoch(model, optimizer, dataloaders):
             targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
             optimizer.zero_grad()
-
+            # train 과정일 때만 torch tensor 미분 계산
             with torch.set_grad_enabled(phase == 'train'):
+                # forward propagation
                 loss_dict = model(images, targets)
-
                 losses = sum(loss for loss in loss_dict.values())
                 losses_value = losses.item()
                 # backward propagation 
@@ -106,8 +112,7 @@ def get_prediction(model, image, confidence) -> Tuple[List, List, List]:
         - Image is obtained from the image path
         - the image is converted to image tensor using PyTorch's Transforms
         - image is passed through the model to get the predictions
-        - class, box coordinates are obtained, but only prediction score > threshold
-            are chosen.
+        - class, box coordinates are obtained, but only prediction score > threshold are chosen.
     """
     model.eval()
     with torch.no_grad():
@@ -135,14 +140,13 @@ def visualize_object_detection(model, dataloader, confidence=0.7) -> None:
         - dataloader - torch.utils.data.DataLoader, input image DataLoader
         - confidence - threshold value for prediction score
         method:
-        - prediction is obtained from get_prediction method
-        - for each prediction, bounding box is drawn and text is written 
-            with opencv
-        - the final image is displayed
+        - save prediction image is obtained from get_prediction method
+        - for each prediction, bounding box is drawn and text is written with matplotlib
     """
     print(f"Detect Object ...")
     since = time.time()
 
+    # 이미지 결과 Path 디렉토리 생성
     output_path = os.path.join(OUTPUT_PATH, 'images')
     if not os.path.isdir(output_path):
         make_dir(output_path)
@@ -185,7 +189,10 @@ def visualize_object_detection(model, dataloader, confidence=0.7) -> None:
     print(f"Inference Time per sample: {time_elapsed / (len(dataloader) * BATCH_SIZE):.6f}s")
 
 
-def mean_average_precision(model, dataloader):
+def mean_average_precision(model, dataloader) -> Dict:
+    """
+    Return mAP result from the dataloader
+    """
     from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
     preds = []
@@ -197,9 +204,9 @@ def mean_average_precision(model, dataloader):
             pred_class, pred_boxes, pred_score = get_prediction(model, image, 0)
             preds.append(
                 dict(
-                    boxes=torch.tensor(pred_boxes, dtype=torch.float32),
-                    scores=torch.tensor(pred_score, dtype=torch.float32),
-                    labels=torch.tensor(pred_class, dtype=torch.int64)
+                    boxes=torch.tensor(pred_boxes, dtype=torch.float32).to(DEVICE),
+                    scores=torch.tensor(pred_score, dtype=torch.float32).to(DEVICE),
+                    labels=torch.tensor(pred_class, dtype=torch.int64).to(DEVICE)
                 )
             )
             y_true.append(
@@ -212,6 +219,7 @@ def mean_average_precision(model, dataloader):
     metric = MeanAveragePrecision()
     metric.update(preds, y_true)
     metric_dict = dict(metric.compute())
+
     result = dict()
     for key, value in metric_dict.items():
         result[key] = value.cpu().numpy().tolist()
