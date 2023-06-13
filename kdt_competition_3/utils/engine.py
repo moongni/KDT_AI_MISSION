@@ -41,6 +41,8 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
             best_map_75 = map_75
             best_model_wts = copy.deepcopy(model.state_dict())
             patience = 0
+            torch.save(model, os.path.join(OUTPUT_PATH, 'best_detector.pth'))
+
         print(f"Test mAP 75 score: {map_75} Best mAP 75 {best_map_75}")
 
         # Early Stop

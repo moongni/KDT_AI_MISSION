@@ -17,8 +17,8 @@ class TrainTransform:
     def __init__(self):
         self.transforms = A.Compose([
                             A.OneOf([
-                                A.HueSaturationValue(hue_shift_limit=0.2, sat_shift_limit= 0.2, val_shift_limit=0.2, p=0.5),
-                                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5)
+                                A.HueSaturationValue(hue_shift_limit=0.2, sat_shift_limit= 0.2, val_shift_limit=0.2, p=0.9),
+                                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.9)
                             ], p=0.9),                      
                             A.ToGray(p=0.05),
                             A.HorizontalFlip(p=0.5), 

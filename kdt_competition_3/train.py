@@ -14,6 +14,7 @@ from models import *
 set_seed()
 print(f"Set Seed: {SEED}")
 print(f"Torch Device: {DEVICE}")
+make_dir(OUTPUT_PATH)
 
 # Data 불러오기
 train_df = pd.read_csv(TRAIN_DF_PATH)
@@ -42,10 +43,6 @@ lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
 
 # Train model
 best_model, train_loss_list, test_loss_list = train(model, optimizer, dataloaders, lr_scheduler)
-
-# Save best model
-make_dir(OUTPUT_PATH)
-torch.save(best_model, os.path.join(OUTPUT_PATH, 'best_detector.pth'))
 
 # Get metrics score from test_loader
 map_result = mean_average_precision(best_model, test_loader)
