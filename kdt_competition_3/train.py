@@ -19,8 +19,8 @@ print(f"Torch Device: {DEVICE}")
 train_df = pd.read_csv(TRAIN_DF_PATH)
 test_df = pd.read_csv(TEST_DF_PATH)
 
-train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, TrainTransform(), train=True)
-test_dset = ObjDetectionDataset(TEST_PATH, test_df, TestTransform(), train=False)
+train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, TrainTransform())
+test_dset = ObjDetectionDataset(TEST_PATH, test_df, TestTransform())
 print(f"Load Dataset from \n {TRAIN_DF_PATH} \n {TEST_DF_PATH}")
 print(f"Train data size: {len(train_dset)}, Test data size: {len(test_dset)}")
 
