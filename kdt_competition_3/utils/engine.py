@@ -16,7 +16,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
-    best_loss = float('inf')
+    best_map_75 = 0
     train_loss_list = []
     test_loss_list = []
     patience = 0
@@ -32,11 +32,16 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
         patience += 1
         
         # Save Best model weight
-        if best_loss > test_loss:
+        map_75 = mean_average_precision(model, dataloaders['test'])['map_75']
+        if isinstance(map_75, list):
+            map_75 = map_75[0]
+        
+        if best_map_75 < map_75:
             print(f"Best Model detection Save model state")
-            best_loss = test_loss
+            best_map_75 = map_75
             best_model_wts = copy.deepcopy(model.state_dict())
             patience = 0
+        print(f"Test mAP 75 score: {map_75} Best mAP 75 {best_map_75}")
 
         # Early Stop
         if patience > PATIENCE:
@@ -47,7 +52,7 @@ def train(model, optimizer, dataloaders, lr_scheduler=None):
         
     time_elapsed = time.time() - since
     print(f"Training compelet in {time_elapsed // 60}m {time_elapsed % 60}s")    
-    print(f"Best Test Loss: {best_loss:.4f}")
+    print(f"Best Test mAP 75: {best_map_75:.4f}")
 
     model.load_state_dict(best_model_wts)
 
@@ -154,7 +159,6 @@ def visualize_object_detection(model, dataloader, confidence=0.7) -> None:
     model.to(DEVICE)
     for images, targets in dataloader:
         images = list(image.to(DEVICE) for image in images)
-        print(targets)
         targets = [{k: v.cpu().numpy() for k, v in t.items()} for t in targets]
         
         for image, target in zip(images, targets):

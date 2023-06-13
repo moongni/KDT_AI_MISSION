@@ -10,6 +10,7 @@ setup(
         'numpy',
         'pandas',
         'torchvision',
-        'torchmetrics'
+        'torchmetrics',
+        'opencv-python'
     ]
 )

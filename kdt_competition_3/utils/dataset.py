@@ -20,8 +20,7 @@ class ObjDetectionDataset(Dataset):
         self,
         root: str,
         df: Optional[pd.DataFrame],
-        transform: Optional[nn.Module] = None,
-        train: bool = True
+        transform: Optional[nn.Module] = None
     ) -> None:
         if not os.path.isdir(root):
             raise Exception(f"Invalid root path: {root}")
