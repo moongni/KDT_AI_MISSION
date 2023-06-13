@@ -8,6 +8,9 @@ import torch.nn as nn
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
+from albumentations.pytorch.transforms import ToTensorV2
+import cv2
+import matplotlib.pyplot as plt
 
 from config import config
 
@@ -28,8 +31,6 @@ class ObjDetectionDataset(Dataset):
         self.root = root
         self.df = df
         self.transform = transform
-        self.img_size = (3, config.IMG_SIZE, config.IMG_SIZE)
-        self.train = train
 
     def preprocessing(self, df: pd.DataFrame) -> pd.DataFrame:
         new_data = {
@@ -75,29 +76,40 @@ class ObjDetectionDataset(Dataset):
         data = self.df.iloc[idx]
         file_name = data['filename']
         img_path = os.path.join(self.root, str(file_name).zfill(4) + '.jpg')
-        # open Image
-        image = Image.open(img_path)
-        if self.transform is not None:
-            image, data = self.transform(image, data, self.train)
-        else:
-            image = np.asarray(image)
-            image = transforms.ToTensor()(image)
 
-        x_center = np.array(data['x_center']).reshape(-1, 1) * self.img_size[2]
-        y_center = np.array(data['y_center']).reshape(-1, 1) * self.img_size[1]
-        width = (np.array(data['w']) * self.img_size[2]).reshape(-1, 1) // 2
-        height = (np.array(data['h']) * self.img_size[1]).reshape(-1, 1) // 2
+        # open Image
+        image = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
+        image /= 255
+        h, w, _ = image.shape
 
         # get labels
         labels = np.array(data['label_idx']) + 1  # 0 index -> background
         num_objs = len(labels)
 
         # get bounding box
+        x_center = (np.array(data['x_center']).reshape(-1, 1) * w).astype(np.int32)
+        y_center = (np.array(data['y_center']).reshape(-1, 1) * h).astype(np.int32)
+        width = (np.array(data['w']) * w).reshape(-1, 1) // 2
+        height = (np.array(data['h']) * h).reshape(-1, 1) // 2
         x_0 = x_center - width
         x_1 = x_center + width
         y_0 = y_center - height
         y_1 = y_center + height
         boxes = np.hstack((x_0, y_0, x_1, y_1))
+        if self.transform:
+            sample = {
+                'image': image,
+                'bboxes': boxes,
+                'labels': labels
+            }
+            transformed = self.transform(**sample)
+            image = transformed['image']
+            boxes = np.array(transformed['bboxes'])
+            labels = np.array(transformed['labels'])
+        else:
+            image = np.asarray(image)
+            image = ToTensorV2(p=1.0)(image)
 
         # get boxes area
         area = ((boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]))
@@ -120,12 +132,12 @@ class ObjDetectionDataset(Dataset):
 
 if __name__ == "__main__":
     from config import *
-    from utils import transform
+    from utils import TrainTransform
 
     train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
     test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
 
-    train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, transform=transform)
+    train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, transform=TrainTransform())
 
     print(len(train_dset))
     iter_ = iter(train_dset)

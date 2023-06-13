@@ -8,7 +8,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from config import *
-from .utils import invTrans, make_dir, visualize_losses
+from .utils import make_dir, visualize_losses
 
 
 def train(model, optimizer, dataloaders, lr_scheduler=None):
@@ -154,15 +154,16 @@ def visualize_object_detection(model, dataloader, confidence=0.7) -> None:
     model.to(DEVICE)
     for images, targets in dataloader:
         images = list(image.to(DEVICE) for image in images)
+        print(targets)
         targets = [{k: v.cpu().numpy() for k, v in t.items()} for t in targets]
-
+        
         for image, target in zip(images, targets):
             fig = plt.figure()
             pred_class, pred_boxes, pred_score = get_prediction(model, image, confidence)
             # class idx -> class name
             pred_class = [CLASS_INFO[i] for i in pred_class]
             image = image.cpu()
-            image = invTrans(image).permute(1, 2, 0)
+            image = image.permute(1, 2, 0).numpy()
             plt.axis('off')
             plt.imshow(image)
             for i, pred_box in enumerate(pred_boxes):

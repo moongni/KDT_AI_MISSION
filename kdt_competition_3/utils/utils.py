@@ -8,50 +8,39 @@ import matplotlib.pyplot as plt
 
 from config import *
 
-
-invTrans = T.Normalize((-1 * MEAN) / STD, (1.0 / STD))
-
-
-def get_common_transform() -> T.Compose:
-    """
-    Return tranform method to apply both train and test dataset
-    """
-    transforms = []
-    transforms.append(T.Resize((IMG_SIZE, IMG_SIZE))),
-    transforms.append(T.ToTensor()),
-    transforms.append(T.Normalize(MEAN, STD))
-    return T.Compose(transforms)
+import albumentations as A
+import matplotlib.pyplot as plt
+from albumentations.pytorch.transforms import ToTensorV2
 
 
-def get_augmented_transform() -> T.Compose:
-    """
-    Return tranform method to apply train dataset only
-    """
-    transforms = []
-    transforms.append(T.RandomApply([
-        T.ColorJitter(brightness=0.1, contrast=0.2),
-    ], 0.3))
-    transforms.append(T.RandomApply([
-        T.GaussianBlur(kernel_size=(7, 13), sigma=(0.1, 2))
-    ], 0.3))
-    return T.Compose(transforms)
+class TrainTransform:
+    def __init__(self):
+        self.transforms = A.Compose([
+                            A.OneOf([
+                                A.HueSaturationValue(hue_shift_limit=0.2, sat_shift_limit= 0.2, val_shift_limit=0.2, p=0.5),
+                                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5)
+                            ], p=0.9),                      
+                            A.ToGray(p=0.05),
+                            A.HorizontalFlip(p=0.5), 
+                            A.Cutout(num_holes=8, max_h_size=64, max_w_size=64, fill_value=0, p=0.2),
+                            A.Resize(height=IMG_SIZE, width=IMG_SIZE, p=1),
+                            ToTensorV2(p=1.0)
+                        ], p=1.0, bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels']))
 
-
-def transform(image, target, train:bool):
-    """
-    tranform method, if train is True, invert left and right with a 50% chance
-    """
-    transforms = get_common_transform()
-    # augmented = get_augmented_transform()
-    image = transforms(image)
-    if train:
-        # image = augmented(image)
-        if random.random() > 0.5:
-            image = T.RandomHorizontalFlip(1)(image)
-            target['x_center'] = [1 - x for x in target['x_center']]
+    def __call__(self, **kwargs):
+        return self.transforms(**kwargs)
     
-    return image, target
 
+class TestTransform:
+    def __init__(self):
+        self.transforms = A.Compose([
+                            A.Resize(height=IMG_SIZE, width=IMG_SIZE, p=1.0),
+                            ToTensorV2(p=1.0)
+                          ], p=1.0, bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels']))
+    
+    def __call__(self, **kwargs):
+        return self.transforms(**kwargs)
+    
 
 def collate_fn(batch):
     """
@@ -98,15 +87,19 @@ def make_dir(path) -> None:
 if __name__ == "__main__":
     ...
     import pandas as pd
-    # from torch.utils.data import DataLoader
+    from torch.utils.data import DataLoader
 
-    # from config import *
-    # from dataset import ObjDetectionDataset 
+    from config import *
+    from dataset import ObjDetectionDataset 
     
     
-    # train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
-    # test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
+    train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
+    test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
 
-    # transform = get_transform()
-    # train_dset = ObjDetectionDataset(TRAIN_PATH, train_df)
-    visualize_losses([random.random() for _ in range(10)], [random.random() for _ in range(10)])
+    train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, TrainTransform())
+    test_dset = ObjDetectionDataset(TEST_PATH, test_df, TestTransform())
+    image, label = next(iter(test_dset))
+    print(f"Image shape:", image.size())
+    plt.imshow(image.permute(1, 2, 0).numpy())
+    plt.show()
+    # visualize_losses([random.random() for _ in range(10)], [random.random() for _ in range(10)])
