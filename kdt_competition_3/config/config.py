@@ -7,7 +7,9 @@ IMG_SIZE = 416
 BATCH_SIZE = 8
 EPOCHS = 100
 SEED = 12341
+
 CLASS_INFO = {0: 'background', 1:'Buffalo', 2:'Elephant', 3:'Rhinoceros', 4:'Zebra'}
+
 CLASSES = CLASS_INFO.keys()
 NUM_CLASSES = len(CLASSES)
 PATIENCE = 10

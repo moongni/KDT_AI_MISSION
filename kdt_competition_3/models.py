@@ -20,15 +20,15 @@ if __name__ == "__main__":
     model = fasterrcnn_resnet_50()
     print(model)
 
-    import pandas as pd
-    from torch.utils.data import DataLoader
-    from config import *
-    from utils import *
+    # import pandas as pd
+    # from torch.utils.data import DataLoader
+    # from config import *
+    # from utils import *
 
-    train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
-    test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
+    # train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train_output.csv'))
+    # test_df = pd.read_csv(os.path.join(TEST_PATH, 'test_output.csv'))
 
-    train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, TrainTransform())
-    test_dset = ObjDetectionDataset(TEST_PATH, test_df, TestTransform())
-    test_loader = DataLoader(test_dset, batch_size=1, shuffle=False, collate_fn=collate_fn)
-    visualize_object_detection(model, test_loader)
+    # train_dset = ObjDetectionDataset(TRAIN_PATH, train_df, TrainTransform())
+    # test_dset = ObjDetectionDataset(TEST_PATH, test_df, TestTransform())
+    # test_loader = DataLoader(test_dset, batch_size=1, shuffle=False, collate_fn=collate_fn)
+    # visualize_object_detection(model, test_loader)

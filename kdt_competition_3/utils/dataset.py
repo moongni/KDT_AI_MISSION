@@ -84,6 +84,7 @@ class ObjDetectionDataset(Dataset):
 
         # get labels
         labels = np.array(data['label_idx']) + 1  # 0 index -> background
+        
         num_objs = len(labels)
 
         # get bounding box
@@ -96,6 +97,7 @@ class ObjDetectionDataset(Dataset):
         y_0 = y_center - height
         y_1 = y_center + height
         boxes = np.hstack((x_0, y_0, x_1, y_1))
+
         if self.transform:
             sample = {
                 'image': image,
